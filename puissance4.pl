@@ -168,14 +168,46 @@ square([_,_,_,_,_,_,_,_,M],9,M).
 % Players win by having their mark in one of the following square configurations:
 %
 
-win([M,M,M, _,_,_, _,_,_],M).
-win([_,_,_, M,M,M, _,_,_],M).
-win([_,_,_, _,_,_, M,M,M],M).
-win([M,_,_, M,_,_, M,_,_],M).
-win([_,M,_, _,M,_, _,M,_],M).
-win([_,_,M, _,_,M, _,_,M],M).
-win([M,_,_, _,M,_, _,_,M],M).
-win([_,_,M, _,M,_, M,_,_],M).
+win(B, D) :- winVertical(B,D),!.
+win(B, D) :- winHorizontal(B,D),!.
+win(B, D) :- winDiagonal(B,D).
+    
+% Vertical
+winVertical([C|_],D) :- winVerticalCol(C,D),!.
+winVertical([_|B],D) :- winVertical(B,D).
+winVerticalCol([D,D,D,D,_,_],D).
+winVerticalCol([_,D,D,D,D,_],D).
+winVerticalCol([_,_,D,D,D,D],D).
+
+% Horizontal
+winHorizontal([C1,C2,C3,C4|_],D) :- 
+    nth1(R,C1,D),nth1(R,C2,D2),nth1(R,C3,D3),nth1(R,C4,D4),
+    D==D2,D2==D3,D3==D4,!.
+winHorizontal([_|L],D):-
+    winHorizontal(L,D).
+
+% Both diagonals
+winDiagonal(B,D)  :- winDiagonal1(B,D),!.
+winDiagonal(B,D)  :- winDiagonal2(B,D),!.
+
+% Diagonale haut-gauche -> bas-droite
+winDiagonal1([C1,C2,C3,C4|_],D) :- 
+    nth1(R1,C1,D),nth1(R2,C2,D2),nth1(R3,C3,D3),nth1(R4,C4,D4),
+    D==D2,D2==D3,D3==D4,
+    R4 is R3+1,R3 is R2+1, R2 is R1+1,!.
+winDiagonal1([_|L],D):-
+    winDiagonal1(L,D).
+
+% Diagonale haut-droite -> bas-gauche
+winDiagonal2([C1,C2,C3,C4|_],D):- 
+    nth1(R1,C1,D),nth1(R2,C2,D2),nth1(R3,C3,D3),nth1(R4,C4,D4),
+    D==D2,D2==D3,D3==D4,
+    R4 is R3-1,R3 is R2-1, R2 is R1-1,!.
+winDiagonal2([_|L],D):-
+    winDiagonal2(L,D).
+
+% Grille gagnante sur la troisième colonne
+% [[a,a,x,d,e,f],[a,b,a,d,e,f],[a,a,a,a,e,f],[a,b,x,d,e,f],[c,b,x,a,t,i],[a,q,x,d,e,f],[a,b,z,d,e,f]]
 
 
 %.......................................
@@ -426,7 +458,7 @@ better2(D,R,M,S1,U1,S2,U2,  S,U) :-
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% OUTPUT
+%%% OUTPUT TODO : afficher le board correctement
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 output_players :- 
