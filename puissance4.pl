@@ -16,8 +16,8 @@ opponent_mark(2, 'y').
 
 blank_mark('e').        %%% the mark used in an empty square
 
-maximizing('y').        %%% the player playing x is always trying to maximize the utility of the board position
-minimizing('r').        %%% the player playing o is always trying to minimize the utility of the board position
+maximizing('y').        %%% the player playing y is always trying to maximize the utility of the board position
+minimizing('r').        %%% the player playing r is always trying to minimize the utility of the board position
 
 
 
@@ -48,7 +48,7 @@ hello :-
 initialize :-
     random_seed,          %%% use current time to initialize random number generator
     blank_mark(E),
-    asserta( board([E,E,E, E,E,E, E,E,E]) )  %%% create a blank board
+    asserta( board([[E,E,E,E,E,E],[E,E,E,E,E,E],[E,E,E,E,E,E],[E,E,E,E,E,E],[E,E,E,E,E,E],[E,E,E,E,E,E],[E,E,E,E,E,E]]) )  %%% create a blank board
     .
 
 goodbye :-
@@ -140,30 +140,20 @@ play(P) :-
 
 
 %.......................................
-% square TODO:POUVOIR PLACER UN DISQUE
+% case : récupérer la valeur à la position (NC,NR)
 %.......................................
-% The mark in a square(N) corresponds to an item in a list, as follows:
-
-square([M,_,_,_,_,_,_,_,_],1,M).
-square([_,M,_,_,_,_,_,_,_],2,M).
-square([_,_,M,_,_,_,_,_,_],3,M).
-square([_,_,_,M,_,_,_,_,_],4,M).
-square([_,_,_,_,M,_,_,_,_],5,M).
-square([_,_,_,_,_,M,_,_,_],6,M).
-square([_,_,_,_,_,_,M,_,_],7,M).
-square([_,_,_,_,_,_,_,M,_],8,M).
-square([_,_,_,_,_,_,_,_,M],9,M).
+% NC : numéro de la colonne, NR : numéro de la ligne
+case(B, NC, NR, V) :-
+    nth1(NC, B, C), nth1(NR, C, V).
 
 
 %.......................................
-% win TODO: SAVOIR QUAND ON GAGNE
+% win : vérifier les conditions de victoire
+%       récupérer le gagnant le cas échéant
 %.......................................
-% Players win by having their mark in one of the following square configurations:
-%
-
-win(B, D) :- winVertical(B,D),D\=e,!.
-win(B, D) :- winHorizontal(B,D),D\=e,!.
-win(B, D) :- winDiagonal(B,D),D\=e.
+win(B, D) :- winVertical(B,D),D\==e,!.
+win(B, D) :- winHorizontal(B,D),D\==e,!.
+win(B, D) :- winDiagonal(B,D),D\==e.
     
 % Vertical
 winVertical([C|_],D) :- winVerticalCol(C,D),!.
@@ -202,20 +192,22 @@ winDiagonal2([_|L],D):-
 % Grille réaliste
 % [[r,r,y,y,e,e],[r,y,r,y,e,e],[y,r,r,y,e,e],[r,r,y,e,e,e],[y,r,y,r,e,e],[r,y,r,y,e,e],[r,r,y,y,e,e]]
 
+
 %.......................................
-% move TODO: MODIFIER UN DISQUE DANS LA LISTE
+% move
 %.......................................
 % applies a move on the given board
-% (put mark M in square S on board B and return the resulting board B2)
+% (put disk D in square S on board B and return the resulting board B2)
 %
 
-move(B,S,M,B2) :-
-    set_item(B,S,M,B2)
+move(B,NC,D,B2) :-
+    add_disc(B,NC,D,B2)
     .
 
 
 %.......................................
-% game_over TODO: CHECK LA FIN DE PARTIE
+% game_over : vérifier si l'adversaire a gagné
+%             ou si la grille est pleine
 %.......................................
 % determines when the game is over
 %
@@ -224,13 +216,13 @@ game_over(P, B) :-
     .
 
 game_over2(P, B) :-
-    opponent_mark(P, M),   %%% game is over if opponent wins
-    win(B, M)
+    opponent_mark(P, D),   %%% game is over if opponent wins
+    win(B, D),!
     .
 
 game_over2(P, B) :-
     blank_mark(E),
-    not(square(B,S,E))     %%% game is over if opponent wins
+    not(case(B,X,Y,E))     %%% game is over if board is full
     .
 
 
@@ -259,7 +251,7 @@ make_move2(human, P, B, B2) :-
     read(S),
 
     blank_mark(E),
-    square(B, S, E),
+    case(B,S,X,E),
     player_mark(P, M),
     move(B, S, M, B2), !
     .
@@ -267,7 +259,7 @@ make_move2(human, P, B, B2) :-
 make_move2(human, P, B, B2) :-
     nl,
     nl,
-    write('Please select a numbered column.'),
+    write('Please select a numbered and empty column.'),
     make_move2(human,P,B,B2)
     .
 
@@ -296,8 +288,8 @@ make_move2(computer, P, B, B2) :-
 %
 
 moves(B,L) :-
-    not(win(B,x)),                %%% if either player already won, then there are no available moves
-    not(win(B,o)),
+    not(win(B,y)),                %%% if either player already won, then there are no available moves
+    not(win(B,r)),
     blank_mark(E),
     findall(N, square(B,N,E), L), 
     L \= []
@@ -572,7 +564,16 @@ random_int_1n(N, V) :-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% LIST PROCESSING
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% add disc
+% Ajoute un jeton D, dans la colonne NC, de la grille B
+% et renvoie la nouvelle grille B2
 
+add_disc(B,NC,D,B2) :-
+    blank_mark(E),
+    nth1(NC,B,C), % NC ième colonne de B vers C
+    nth1(NR,C,E),!, % NR ligne de la première case vide dans la colonne
+    set_item(C,NR,D,C2),
+    set_item(B,NC,C2,B2).    
 
 %.......................................
 % set_item
