@@ -161,9 +161,9 @@ square([_,_,_,_,_,_,_,_,M],9,M).
 % Players win by having their mark in one of the following square configurations:
 %
 
-win(B, D) :- winVertical(B,D),!.
-win(B, D) :- winHorizontal(B,D),!.
-win(B, D) :- winDiagonal(B,D).
+win(B, D) :- winVertical(B,D),D\=e,!.
+win(B, D) :- winHorizontal(B,D),D\=e,!.
+win(B, D) :- winDiagonal(B,D),D\=e.
     
 % Vertical
 winVertical([C|_],D) :- winVerticalCol(C,D),!.
