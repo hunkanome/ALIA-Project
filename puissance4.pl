@@ -27,9 +27,7 @@ minimizing('r').        %%% the player playing o is always trying to minimize th
 
 run :-
     hello,          %%% Display welcome message, initialize game
-
     play(1),        %%% Play the game starting with player 1
-
     goodbye         %%% Display end of game message
     .
 
@@ -39,7 +37,6 @@ run :-
 
 hello :-
     initialize,
-%    cls,
     nl,
     nl,
     nl,
@@ -202,9 +199,8 @@ winDiagonal2([C1,C2,C3,C4|_],D):-
 winDiagonal2([_|L],D):-
     winDiagonal2(L,D).
 
-% Grille gagnante sur la troisième colonne
-% [[a,a,x,d,e,f],[a,b,a,d,e,f],[a,a,a,a,e,f],[a,b,x,d,e,f],[c,b,x,a,t,i],[a,q,x,d,e,f],[a,b,z,d,e,f]]
-
+% Grille réaliste
+% [[r,r,y,y,e,e],[r,y,r,y,e,e],[y,r,r,y,e,e],[r,r,y,e,e,e],[y,r,y,r,e,e],[r,y,r,y,e,e],[r,r,y,y,e,e]]
 
 %.......................................
 % move TODO: MODIFIER UN DISQUE DANS LA LISTE
@@ -472,13 +468,13 @@ output_players :-
 
 
 output_winner(B) :-
-    win(B,x),
+    win(B,y),
     write('Y wins.'),
     !
     .
 
 output_winner(B) :-
-    win(B,o),
+    win(B,r),
     write('R wins.'),
     !
     .
@@ -487,53 +483,36 @@ output_winner(B) :-
     write('No winner.')
     .
 
+% affiche la grille
+output_board(B):-
+    nl,
+    write('+---------------------------+'), nl,
+    write('|'), output_line(B,6),
+    write('|---+---+---+---+---+---+---|'), nl,
+    write('|'), output_line(B,5),
+    write('|---+---+---+---+---+---+---|'), nl,
+    write('|'), output_line(B,4),
+    write('|---+---+---+---+---+---+---|'), nl,
+    write('|'), output_line(B,3),
+    write('|---+---+---+---+---+---+---|'), nl,
+    write('|'), output_line(B,2),
+    write('|---+---+---+---+---+---+---|'), nl,
+    write('|'), output_line(B,1),
+    write('+---------------------------+'), nl, 
+    write('  1   2   3   4   5   6   7'), nl, 
+    nl.
 
-output_board(B) :-
-    nl,
-    nl,
-    output_square(B,1),
-    write('|'),
-    output_square(B,2),
-    write('|'),
-    output_square(B,3),
-    nl,
-    write('-----------'),
-    nl,
-    output_square(B,4),
-    write('|'),
-    output_square(B,5),
-    write('|'),
-    output_square(B,6),
-    nl,
-    write('-----------'),
-    nl,
-    output_square(B,7),
-    write('|'),
-    output_square(B,8),
-    write('|'),
-    output_square(B,9), !
-    .
+% affiche la N-ième ligne de la grille
+output_line([],_) :- nl.
+output_line([C|B],N) :-
+    nth1(N, C, R), write(' '), output_case(R), write(' |'), output_line(B,N).
 
-output_board :-
-    board(B),
-    output_board(B), !
-    .
+% affiche et formate une valeur
+output_case(r) :- ansi_format([bold,fg(red)],'O',[]),!.
+output_case(y) :- ansi_format([bold,fg(yellow)],'O',[]),!.
+output_case(e) :- write(' '),!.
+output_case(D) :- write(D).
 
-output_square(B,S) :-
-    square(B,S,M),
-    write(' '), 
-    output_square2(S,M),  
-    write(' '), !
-    .
-
-output_square2(S, E) :- 
-    blank_mark(E),
-    write(S), !              %%% if square is empty, output the square number
-    .
-
-output_square2(S, M) :- 
-    write(M), !              %%% if square is marked, output the mark
-    .
 
 output_value(D,S,U) :-
     D == 1,
@@ -593,12 +572,6 @@ random_int_1n(N, V) :-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% LIST PROCESSING
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-member([V|T], V).
-member([_|T], V) :- member(T,V).
-
-append([], L, L).
-append([H|T1], L2, [H|T3]) :- append(T1, L2, T3).
 
 
 %.......................................
