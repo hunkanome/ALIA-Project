@@ -37,7 +37,6 @@ run :-
     goodbye
     .
 
-
 hello :-
     initialize,
 %    cls,
@@ -84,7 +83,6 @@ read_play_again(V) :-
     read_play_again(V)
     .
 
-
 read_players :-
     nl,
     nl,
@@ -116,7 +114,6 @@ set_players(N) :-
     read_players
     .
 
-
 human_playing(M) :- 
     (M == 'y' ; M == 'Y'),
     asserta( player(1, human) ),
@@ -134,7 +131,6 @@ human_playing(M) :-
     write('Please enter y or r.'),
     set_players(1)
     .
-
 
 play(P) :-
     board(B), !,
