@@ -227,7 +227,7 @@ game_over2(P, B) :-
 
 
 %.......................................
-% make_move TODO: POUVOIR FAIRE UN MOVE
+% make_move
 %.......................................
 % requests next move from human/computer, 
 % then applies that move to the given board
@@ -282,7 +282,7 @@ make_move2(computer, P, B, B2) :-
 
 
 %.......................................
-% moves
+% moves : TODO : renvoyer la liste des coups possibles (colonnes non pleines)
 %.......................................
 % retrieves a list of available moves (empty squares) on a board.
 %
@@ -442,7 +442,7 @@ better2(D,R,M,S1,U1,S2,U2,  S,U) :-
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% OUTPUT TODO : afficher le board correctement
+%%% OUTPUT
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 output_players :- 
