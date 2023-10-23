@@ -206,7 +206,7 @@ move(B,NC,D,B2) :-
 
 
 %.......................................
-% game_over : vérifier si l'adversaire a gagné
+% game_over : vérifier si l adversaire a gagné
 %             ou si la grille est pleine
 %.......................................
 % determines when the game is over
@@ -287,14 +287,33 @@ make_move2(computer, P, B, B2) :-
 % retrieves a list of available moves (empty squares) on a board.
 %
 
-moves(B,L) :-
-    not(win(B,y)),                %%% if either player already won, then there are no available moves
+moves(B,L) :- 
+    not(win(B,y)),  %%% if either player already won, then there are no available moves
     not(win(B,r)),
-    blank_mark(E),
-    findall(N, square(B,N,E), L), 
-    L \= []
+    findall(N, is_column_N_full(B,N), L),
+    L \== []
     .
 
+% Vérifie si la colonne N est pleine
+is_column_N_full(B,N) :-
+    nth1(N,B,Col), /* Obtient Col, la N-ième colonne de la grille B (indexée à partir de 1) */
+    last(Col,X), /* Obtient X, le dernier élément de la colonne Col */
+    blank_mark(X) /* Vérifie que le dernier élément X ne correspond pas à une case vide */
+    .
+
+
+%.......................................
+% Random heuristic 
+%.......................................
+% Heuristic that choses a move at random
+%
+
+h_random(B,S) :-
+    moves(B,CP), /* Obtient la liste des coups possibles CP */
+    length(CP,NCP), /* Obtient le nombre de coups possibles NCP */
+    random(1,NCP,X), /* Choisi un coup possible X aléatoirement */
+    nth1(X,L,S) /* Transcrit X en coup possible S */
+    . 
 
 %.......................................
 % utility 
