@@ -550,28 +550,6 @@ random_seed(N) :-
     !
     .
 
-/*****************************************
- OTHER COMPILER SUPPORT
-******************************************
-
-arity_prolog___random_seed(N) :-
-    nonvar(N),
-    randomize(N), 
-    !
-    .
-
-arity_prolog___random_seed(N) :-
-    var(N),
-    time(time(Hour,Minute,Second,Tick)),
-    N is ( (Hour+1) * (Minute+1) * (Second+1) * (Tick+1)),
-    randomize(N), 
-    !
-    .
-
-******************************************/
-
-
-
 %.......................................
 % random_int_1n
 %.......................................
@@ -582,20 +560,6 @@ random_int_1n(N, V) :-
     !
     .
 
-/*****************************************
- OTHER COMPILER SUPPORT
-******************************************
-
-arity_prolog___random_int_1n(N, V) :-
-    R is random,
-    V2 is (R * N) - 0.5,           
-    float_text(V2,V3,fixed(0)),
-    int_text(V4,V3),
-    V is V4 + 1,
-    !
-    .
-
-******************************************/
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
