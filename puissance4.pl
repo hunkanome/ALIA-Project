@@ -583,7 +583,10 @@ random_int_1n(N, V) :-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% LIST PROCESSING
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%.......................................
 % add disc
+%.......................................
 % Ajoute un jeton D, dans la colonne NC, de la grille B
 % et renvoie la nouvelle grille B2
 
@@ -620,33 +623,6 @@ set_item2( [H|T1], N, V, A, [H|T2] ) :-
     A1 is A + 1, 
     set_item2( T1, N, V, A1, T2 )
     .
-
-
-%.......................................
-% get_item
-%.......................................
-% Given a list L, retrieve the item at position N and return it as value V
-%
-
-get_item(L, N, V) :-
-    get_item2(L, N, 1, V)
-    .
-
-get_item2( [], _N, _A, V) :- 
-    V = [], !,
-    fail
-    .
-
-get_item2( [H|_T], N, A, V) :- 
-    A = N,
-    V = H
-    .
-
-get_item2( [_|T], N, A, V) :-
-    A1 is A + 1,
-    get_item2( T, N, A1, V)
-    .
-
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
