@@ -86,11 +86,12 @@ read_players :-
     write('Number of human players? '),
     read(N),
     set_players(N)
-    .
+    . 
+
 
 set_players(0) :- 
-    asserta( player(1, computer) ),
-    asserta( player(2, computer) ), !
+    select_ia(1),
+    select_ia(2)
     .
 
 set_players(1) :-
@@ -111,15 +112,33 @@ set_players(N) :-
     read_players
     .
 
+select_ia(P) :-
+    nl,
+    write('Which AI do you want to be the player ? (random)'),
+    write(P),
+    read(IA),
+    set_ia(P,IA)
+    .
+
+set_ia(P,random) :-
+    asserta( player(P, random) ), !
+    .
+
+set_ia(P,IA):-
+    nl,
+    write('Please enter random'),
+    select_ia(P)
+    .
+
 human_playing(M) :- 
     (M == 'y' ; M == 'Y'),
     asserta( player(1, human) ),
-    asserta( player(2, computer) ), !
+    select_ia(2), !
     .
 
 human_playing(M) :- 
     (M == 'r' ; M == 'R'),
-    asserta( player(1, computer) ),
+    select_ia(1),
     asserta( player(2, human) ), !
     .
 
@@ -175,17 +194,19 @@ winDiagonal(B,D)  :- winDiagonal2(B,D),!.
 
 % Diagonale haut-gauche -> bas-droite
 winDiagonal1([C1,C2,C3,C4|_],D) :- 
-    nth1(R1,C1,D),nth1(R2,C2,D2),nth1(R3,C3,D3),nth1(R4,C4,D4),
-    D==D2,D2==D3,D3==D4,
-    R4 is R3+1,R3 is R2+1, R2 is R1+1,!.
+    nth1(R1,C1,D),
+    R2 is R1+1,R3 is R2+1,R4 is R3+1,
+    nth1(R2,C2,D2),nth1(R3,C3,D3),nth1(R4,C4,D4),
+    D==D2,D2==D3,D3==D4,!.
 winDiagonal1([_|L],D):-
     winDiagonal1(L,D).
 
 % Diagonale haut-droite -> bas-gauche
 winDiagonal2([C1,C2,C3,C4|_],D):- 
-    nth1(R1,C1,D),nth1(R2,C2,D2),nth1(R3,C3,D3),nth1(R4,C4,D4),
-    D==D2,D2==D3,D3==D4,
-    R4 is R3-1,R3 is R2-1, R2 is R1-1,!.
+    nth1(R1,C1,D),
+    R2 is R1-1,R3 is R2-1,R4 is R3-1,
+    nth1(R2,C2,D2),nth1(R3,C3,D3),nth1(R4,C4,D4),
+    D==D2,D2==D3,D3==D4,!.
 winDiagonal2([_|L],D):-
     winDiagonal2(L,D).
 
@@ -263,18 +284,19 @@ make_move2(human, P, B, B2) :-
     make_move2(human,P,B,B2)
     .
 
-make_move2(computer, P, B, B2) :-
+make_move2(random, P, B, B2) :-
     nl,
     nl,
     write('Computer is thinking about his next move...'),
-    player_mark(P, M),
-    minimax(0, B, M, S, U),
-    move(B,S,M,B2),
+    player_mark(P, D),
+    h_random(B, S),
+    % minimax(0, B, M, S, U),
+    move(B,S,D,B2),
 
     nl,
     nl,
     write('Computer places '),
-    write(M),
+    write(D),
     write(' in column '),
     write(S),
     write('.')
@@ -311,8 +333,9 @@ is_column_N_full(B,N) :-
 h_random(B,S) :-
     moves(B,CP), /* Obtient la liste des coups possibles CP */
     length(CP,NCP), /* Obtient le nombre de coups possibles NCP */
-    random(1,NCP,X), /* Choisi un coup possible X aléatoirement */
-    nth1(X,L,S) /* Transcrit X en coup possible S */
+    N is NCP + 1,
+    random(1,N,X), /* Choisi un coup possible X aléatoirement */
+    nth1(X,CP,S) /* Transcrit X en coup possible S */
     . 
 
 %.......................................
