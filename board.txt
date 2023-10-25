@@ -70,6 +70,27 @@ evaluate_board(Board, Player1, Player2, Value) :-
     evaluate_board_player(Board, Player2, Player1, Value2),
     Value is Value1 - Value2.
 
+
+   16 The following conventions are used in this program...
+   18 Single letter variables represent:
+   20 L - a list
+   21 N - a number, position, index, or counter
+   22 V - a value (usually a string)
+   23 A - an accumulator
+   24 H - the head of a list
+   25 T - the tail of a list
+
+   27 For this implementation, these single letter variables represent:
+   29 P - a player number (1 or 2)
+   30 B - the board (a 9 item list representing a 3x3 matrix)
+   31     each "square" on the board can contain one of 3 values: x ,o, or e (for empty)
+   32 S - the number of a square on the board (1 - 9)
+   33 M - a mark on a square (x or o)
+   34 E - the mark used to represent an empty square ('e').
+   35 U - the utility value of a board position
+   36 R - a random number
+   37 D - the depth of the minimax search tree (for outputting utility values, and for debugging)
+
 Here is the minimax code for tic-tac-toe, adapt this for our  Connect4.
 %.......................................
 % minimax
@@ -188,4 +209,17 @@ better2(D,R,M,S1,U1,S2,U2,  S,U) :-
     S = S2,
     U = U2,
     !
+    .
+
+
+output_value(D,S,U) :-
+    D == 1,
+    nl,
+    write('Square '),
+    write(S),
+    write(', utility: '),
+    write(U), !
+    .
+output_value(D,S,U) :- 
+    true
     .

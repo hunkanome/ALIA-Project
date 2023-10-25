@@ -1,102 +1,79 @@
-%.......................................
-% minimax
-%.......................................
-% The minimax algorithm always assumes an optimal opponent.
+MINIMAX(Board, Depth, Player, Move, Score)
+BEST(Board, Depth, Player, Moves, Move, Score)
+MOVE(Board,Move, Player, Board2)
+BETTER(Player, Move1, Score1, Move2, Score2, Move, Score)
+BETTER(Random, Player, Move1, Score1, Move2, Score2, Move, Score)
 
-% For the opening move against an optimal player, the best minimax can ever hope for is a tie.
-% So, technically speaking, any opening move is acceptable.
-% Save the user the trouble of waiting  for the computer to search the entire minimax tree 
-% by simply selecting a random square.
+maximizing(y).
+minimizing(r). 
 
-minimax(D,[E,E,E, E,E,E, E,E,E],M,S,U) :-   
-    blank_mark(E),
-    random_int_1n(9,S),
-    !
-    .
-
-minimax(D,B,M,S,U) :-
-    D2 is D + 1,
-    moves(B,L),          %%% get the list of available moves
+minimax(Board, Depth, Player, Move, Score) :- 
+    Depth is Depth -1,
+    moves(Board, Moves),
     !,
-    best(D2,B,M,L,S,U),  %%% recursively determine the best available move
+    best(Board,Depth,Player,Moves,Move, Score),
     !
     .
 
-% if there are no more available moves, 
-% then the minimax value is the utility of the given board position
+% Condition d arrêt
+% Plus de coups à jouer
 
-minimax(D,B,M,S,U) :-
-    utility(B,U)      
-    .
+minimax(Board, 0, Player, Move, Score) :-
+    (Player==r, Player2 is y ; Player==y, Player2 is r),
+    evaluate_board(Board, Player, Player2, Score).
 
-
-%.......................................
-% best
-%.......................................
-% determines the best move in a given list of moves by recursively calling minimax
-%
-
-% if there is only one move left in the list...
-
-best(D,B,M,[S1],S,U) :-
-    move(B,S1,M,B2),        %%% apply that move to the board,
-    inverse_mark(M,M2), 
-    !,  
-    minimax(D,B2,M2,_S,U),  %%% then recursively search for the utility value of that move.
-    S = S1, !,
-    output_value(D,S,U),
-    !
-    .
+% only one move left
+best(Board, Depth, Player, [Moves], Move, Score) :-
+    move(Board,Move, Player, Board2)
+    (Player==r, Player is y ; Player==y, Player is r),
+    !,
+    minimax(Board2, Depth, Player, _Move, Score),
+    Move = Moves, !,
+    output_value(Depth, Board, Score)
 
 % if there is more than one move in the list...
-
-best(D,B,M,[S1|T],S,U) :-
-    move(B,S1,M,B2),             %%% apply the first move (in the list) to the board,
-    inverse_mark(M,M2), 
+best(Board, Depth, Player, [Head|Tail], Move, Score) :-
+    move(Board, Head, Player, Board2)
+    (Player==r, Player is y ; Player==y, Player is r),
     !,
-    minimax(D,B2,M2,_S,U1),      %%% recursively search for the utility value of that move,
-    best(D,B,M,T,S2,U2),         %%% determine the best move of the remaining moves,
-    output_value(D,S1,U1),      
-    better(D,M,S1,U1,S2,U2,S,U)  %%% and choose the better of the two moves (based on their respective utility values)
+    minimax(Board2, Depth, Player, _Move, Score1),
+    best(Board, Depth, Player, Tail, Move2, Score2), 
+    output_value(Depth, Head, Score1),
+    better(Player, Head, Score1, Move2, Score2, Move, Score)
     .
-
 
 %.......................................
 % better
 %.......................................
-% returns the better of two moves based on their respective utility values.
-%
-% if both moves have the same utility value, then one is chosen at random.
 
-better(D,M,S1,U1,S2,U2,     S,U) :-
-    maximizing(M),                     %%% if the player is maximizing
-    U1 > U2,                           %%% then greater is better.
-    S = S1,
-    U = U1,
+better(Player, Move1, Score1, Move2, Score2, Move, Score) :-
+    maximizing(Player),                     %%% if the player is maximizing
+    Score1 > Score2,                           %%% then greater is better.
+    Move = Move1,
+    Score = Score1,
     !
     .
 
-better(D,M,S1,U1,S2,U2,     S,U) :-
-    minimizing(M),                     %%% if the player is minimizing,
-    U1 < U2,                           %%% then lesser is better.
-    S = S1,
-    U = U1, 
+better(Player, Move1, Score1, Move2, Score2, Move, Score) :-
+    minimizing(Player),                     %%% if the player is maximizing
+    Score1 < Score2,                           %%% then greater is better.
+    Move = Move1,
+    Score = Score1,
     !
     .
 
-better(D,M,S1,U1,S2,U2,     S,U) :-
-    U1 == U2,                          %%% if moves have equal utility,
+better(Player, Move1, Score1, Move2, Score2, Move, Score) :-
+    Score1 == Score2,                          %%% if moves have equal utility,
     random_int_1n(10,R),               %%% then pick one of them at random
-    better2(D,R,M,S1,U1,S2,U2,S,U),    
+    better2(Random, Player, Move1, Score1, Move2, Score2, Move, Score),    
     !
     .
 
-better(D,M,S1,U1,S2,U2,     S,U) :-        %%% otherwise, second move is better
-    S = S2,
-    U = U2,
+better(Player, Move1, Score1, Move2, Score2, Move, Score) :-        %%% otherwise, second move is better
+    Move = Move2,
+    Score = Score2,
     !
     .
-
 
 %.......................................
 % better2
@@ -104,15 +81,36 @@ better(D,M,S1,U1,S2,U2,     S,U) :-        %%% otherwise, second move is better
 % randomly selects two squares of the same utility value given a single probability
 %
 
-better2(D,R,M,S1,U1,S2,U2,  S,U) :-
-    R < 6,
-    S = S1,
-    U = U1, 
+better2(Random, Player, Move1, Score1, Move2, Score2, Move, Score) :-
+    Random < 6,
+    Move = Move1,
+    Score = Score1, 
     !
     .
 
-better2(D,R,M,S1,U1,S2,U2,  S,U) :-
-    S = S2,
-    U = U2,
+better2(Random, Player, Move1, Score1, Move2, Score2, Move, Score) :-
+    Move = Move2,
+    Score = Score2, 
+    !
+    .
+
+output_value(Depth,Move, Score) :-
+    D == 1,
+    nl,
+    write('Column'),
+    write(Move),
+    write(', utility: '),
+    write(Score), !
+    .
+
+output_value(Depth,Move, Score) :- 
+    true
+    .
+
+%.......................................
+% returns a random integer from 1 to N
+%.......................................
+random_int_1n(N, V) :-
+    V is random(N) + 1,
     !
     .
