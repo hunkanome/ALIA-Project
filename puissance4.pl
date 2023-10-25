@@ -29,7 +29,7 @@ run :-
     hello,          %%% Display welcome message, initialize game
     play(1),        %%% Play the game starting with player 1
     goodbye         %%% Display end of game message
-    .
+    . 
 
 run :-
     goodbye
@@ -91,7 +91,7 @@ read_players :-
 
 set_players(0) :- 
     select_ia(1),
-    select_ia(2)
+    select_ia(2),!
     .
 
 set_players(1) :-
@@ -103,7 +103,7 @@ set_players(1) :-
 
 set_players(2) :- 
     asserta( player(1, human) ),
-    asserta( player(2, human) ), !
+    asserta( player(2, human) ),!
     .
 
 set_players(N) :-
@@ -114,8 +114,9 @@ set_players(N) :-
 
 select_ia(P) :-
     nl,
-    write('Which AI do you want to be the player ? (random)'),
+    write('Which AI do you want to be the player '),
     write(P),
+    write(' ? (random)'),
     read(IA),
     set_ia(P,IA)
     .
