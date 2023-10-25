@@ -11,29 +11,36 @@ Le nombre total de points est la valeur heuristique pour ce joueur.
 **/
 
 % 2D element finder
-get_element(Board, Row, Col, Element) :-
-    nth1(Row, Board, RowList),
-    nth1(Col, RowList, Element).
+get_element(Board, Col, Row, Element) :-
+    nth1(Col, Board, RowList),
+    nth1(Row, RowList, Element).
 
-/** Obtention d'une slice du plateau (slice = 4 cases adjacentes) **/
-get_slice(Board, Row, Col, Direction, Slice) :-
+/** Obtention d une slice du plateau (slice = 4 cases adjacentes) **/
+get_slice(Board, Col, Row, Direction, Slice) :-
     findall(Element, (
-        between(0, 3, Offset), % Itération sur 4 cases adjacentes à partir d une case de départ (x=Row, y=Col)
+        between(0, 3, Offset), % Itération sur 4 cases adjacentes à partir d une case de départ (x=Col, y=Row)
         (
             Direction = horizontal,
-            NewCol is Col + Offset,
-            get_element(Board, Row, NewCol, Element)
+            NewRow is Row + Offset,
+            get_element(Board, Col, NewRow, Element)
         ;
             Direction = vertical,
-            NewRow is Row + Offset,
-            get_element(Board, NewRow, Col, Element)
-        ;
-            Direction = diagonal,
-            NewRow is Row + Offset,
             NewCol is Col + Offset,
-            get_element(Board, NewRow, NewCol, Element)
+            get_element(Board, NewCol, Row, Element)
+        ;
+            Direction = diagonalPos,
+            NewCol is Col + Offset,
+            NewRow is Row + Offset,
+            get_element(Board, NewCol, NewRow, Element)
+        ;   
+        	Direction = diagonalNeg,
+            NewCol is Col - Offset,
+            NewRow is Row + Offset,
+            get_element(Board, NewCol, NewRow, Element)
         )
-    ), Slice). % Ajout de l élement dans la slice
+    ), Slice), % Ajout de l élement dans la slice
+    length(Slice, 4).
+
 
 % Calcul le nombre de point rapporté par une slice pour Player 1
 count_occurrences(Player1, Player2, Slice, Count) :-
@@ -46,19 +53,24 @@ count_occurrences(Player1, Player2, Slice, Count) :-
 % Calcul le score pour Player1 sans prendre en compte son adversaire
 evaluate_board_player(Board, Player1, Player2, Value) :-
     findall(Count, (    
-        between(1, 7, Row),     
-        between(1, 6, Col),
-        get_slice(Board, Row, Col, horizontal, Slice), % Trouver toutes les slices horizontales
+        between(1, 7, Col),     
+        between(1, 6, Row),
+        get_slice(Board, Col, Row, horizontal, Slice), % Trouver toutes les slices horizontales
         count_occurrences(Player1, Player2, Slice, Count)
     ;                       
-        between(1, 7, Row),     
-        between(1, 6, Col),
-        get_slice(Board, Row, Col, vertical, Slice), % Trouver toutes les slices verticales
+        between(1, 7, Col),     
+        between(1, 6, Row),
+        get_slice(Board, Col, Row, vertical, Slice), % Trouver toutes les slices verticales
         count_occurrences(Player1, Player2, Slice, Count)
     ;
-        between(1, 7, Row),
-        between(1, 6, Col),
-        get_slice(Board, Row, Col, diagonal, Slice), % Trouver toutes les slices diagonales
+        between(1, 7, Col),
+        between(1, 6, Row),
+        get_slice(Board, Col, Row, diagonalNeg, Slice), % Trouver toutes les slices diagonales pente négative
+        count_occurrences(Player1, Player2, Slice, Count)
+    ;
+        between(1, 7, Col),
+        between(1, 6, Row),
+        get_slice(Board, Col, Row, diagonalPos, Slice), % Trouver toutes les slices diagonales pente positive
         count_occurrences(Player1, Player2, Slice, Count)
     ), Counts),
     sum_list(Counts, Value).
