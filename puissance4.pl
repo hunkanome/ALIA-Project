@@ -1,5 +1,6 @@
 :- ensure_loaded(fct_evaluation).
 :- ensure_loaded(negamax).
+:- ensure_loaded(niveau1).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%     FACTS
@@ -118,7 +119,7 @@ select_ia(P) :-
     nl,
     write('Which AI do you want to be the player '),
     write(P),
-    write(' ? (random/nmax)'),
+    write(' ? (random/niveau1/nmax)'),
     read(IA),
     set_ia(P,IA)
     .
@@ -127,13 +128,17 @@ set_ia(P,random) :-
     asserta( player(P, random) ), !
     .
 
+set_ia(P, niveau1) :-
+    asserta( player(P, niveau1) ), !
+    .
+
 set_ia(P, nmax) :-
     asserta( player(P, nmax) ), !
     .
 
 set_ia(P,_):-
     nl,
-    write('Please enter random or nmax'),
+    write('Please enter random, niveau1 or nmax'),
     select_ia(P)
     .
 
@@ -304,7 +309,6 @@ make_move2(random, P, B, B2) :-
     write('Computer is thinking about his next move...'),
     player_mark(P, D),
     h_random(B, S),
-    % minimax(0, B, M, S, U),
     move(B,S,D,B2),
 
     nl,
@@ -325,6 +329,22 @@ make_move2(nmax, P, B, B2) :-
     -> write('negamax succeded in providing a move'),nl
     ; write('negamax failed'),nl, h_random(B, S)
     ),
+    move(B,S,D,B2),
+
+    nl,
+    nl,
+    write('Computer places '),
+    write(D),
+    write(' in column '),
+    write(S),
+    write('.').
+
+make_move2(niveau1, P, B, B2) :-
+    nl,
+    nl,
+    write('Computer is thinking about his next move...'),nl,
+    player_mark(P, D),
+    niveau1(B, P, S),
     move(B,S,D,B2),
 
     nl,
