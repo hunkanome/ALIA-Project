@@ -20,11 +20,11 @@ get_slice(Board, Col, Row, Direction, Slice) :-
     findall(Element, (
         between(0, 3, Offset), % Itération sur 4 cases adjacentes à partir d une case de départ (x=Col, y=Row)
         (
-            Direction = horizontal,
+            Direction = vertical,
             NewRow is Row + Offset,
             get_element(Board, Col, NewRow, Element)
         ;
-            Direction = vertical,
+            Direction = horizontal,
             NewCol is Col + Offset,
             get_element(Board, NewCol, Row, Element)
         ;
@@ -34,8 +34,8 @@ get_slice(Board, Col, Row, Direction, Slice) :-
             get_element(Board, NewCol, NewRow, Element)
         ;   
         	Direction = diagonalNeg,
-            NewCol is Col - Offset,
-            NewRow is Row + Offset,
+            NewCol is Col + Offset,
+            NewRow is Row - Offset,
             get_element(Board, NewCol, NewRow, Element)
         )
     ), Slice), % Ajout de l élement dans la slice
@@ -53,23 +53,23 @@ count_occurrences(Player1, Player2, Slice, Count) :-
 % Calcul le score pour Player1 sans prendre en compte son adversaire
 evaluate_board_player(Board, Player1, Player2, Value) :-
     findall(Count, (    
-        between(1, 7, Col),     
+        between(1, 4, Col),     
         between(1, 6, Row),
         get_slice(Board, Col, Row, horizontal, Slice), % Trouver toutes les slices horizontales
         count_occurrences(Player1, Player2, Slice, Count)
     ;                       
         between(1, 7, Col),     
-        between(1, 6, Row),
+        between(1, 3, Row),
         get_slice(Board, Col, Row, vertical, Slice), % Trouver toutes les slices verticales
         count_occurrences(Player1, Player2, Slice, Count)
     ;
-        between(1, 7, Col),
-        between(1, 6, Row),
+        between(1, 4, Col),
+        between(4, 6, Row),
         get_slice(Board, Col, Row, diagonalNeg, Slice), % Trouver toutes les slices diagonales pente négative
         count_occurrences(Player1, Player2, Slice, Count)
     ;
-        between(1, 7, Col),
-        between(1, 6, Row),
+        between(1, 4, Col),
+        between(1, 3, Row),
         get_slice(Board, Col, Row, diagonalPos, Slice), % Trouver toutes les slices diagonales pente positive
         count_occurrences(Player1, Player2, Slice, Count)
     ), Counts),
