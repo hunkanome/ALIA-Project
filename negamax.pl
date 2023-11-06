@@ -32,7 +32,7 @@ negamax_score(Board, Player, Score, 0, _) :-
     not(game_over(Player, Board)),
     heuristic(Board, Score, Player).
 
-negamax_score(Board, Player, Score, Depth, Alpha) :-
+negamax_score(Board, Player, Score, Depth, _) :-
     Depth > 0,
     not(game_over(Player, Board)),
     moves(Board, ListMoves),
