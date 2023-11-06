@@ -1,3 +1,6 @@
+:- ensure_loaded(fct_evaluation).
+:- ensure_loaded(negamax).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%     FACTS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -46,7 +49,6 @@ hello :-
     .
 
 initialize :-
-    random_seed,          %%% use current time to initialize random number generator
     blank_mark(E),
     asserta( board([[E,E,E,E,E,E],[E,E,E,E,E,E],[E,E,E,E,E,E],[E,E,E,E,E,E],[E,E,E,E,E,E],[E,E,E,E,E,E],[E,E,E,E,E,E]]) )  %%% create a blank board
     .
@@ -116,7 +118,7 @@ select_ia(P) :-
     nl,
     write('Which AI do you want to be the player '),
     write(P),
-    write(' ? (random)'),
+    write(' ? (random/nmax)'),
     read(IA),
     set_ia(P,IA)
     .
@@ -125,9 +127,13 @@ set_ia(P,random) :-
     asserta( player(P, random) ), !
     .
 
+set_ia(P, nmax) :-
+    asserta( player(P, nmax) ), !
+    .
+
 set_ia(P,_):-
     nl,
-    write('Please enter random'),
+    write('Please enter random or nmax'),
     select_ia(P)
     .
 
@@ -288,7 +294,7 @@ make_move2(human, P, B, B2) :-
 make_move2(human, P, B, B2) :-
     nl,
     nl,
-    write('Please select a numbered and empty column.'),
+    write('Please select a numbered and empty column.'),nl,
     make_move2(human,P,B,B2)
     .
 
@@ -310,9 +316,27 @@ make_move2(random, P, B, B2) :-
     write('.')
     .
 
+make_move2(nmax, P, B, B2) :-
+    nl,
+    nl,
+    write('Computer is thinking about his next move...'),nl,
+    player_mark(P, D),
+    (time(negamax(B, P, S))
+    -> write('negamax succeded in providing a move'),nl
+    ; write('negamax failed'),nl, h_random(B, S)
+    ),
+    move(B,S,D,B2),
+
+    nl,
+    nl,
+    write('Computer places '),
+    write(D),
+    write(' in column '),
+    write(S),
+    write('.').
 
 %.......................................
-% moves : TODO : renvoyer la liste des coups possibles (colonnes non pleines)
+% moves
 %.......................................
 % retrieves a list of available moves (empty squares) on a board.
 %
@@ -345,151 +369,6 @@ h_random(B,S) :-
     random(1,N,X), /* Choisi un coup possible X aléatoirement */
     nth1(X,CP,S) /* Transcrit X en coup possible S */
     . 
-
-%.......................................
-% utility 
-%.......................................
-% determines the value of a given board position
-%
-
-utility(B,U) :-
-    win(B,'y'),
-    U = 1, 
-    !
-    .
-
-utility(B,U) :-
-    win(B,'r'),
-    U = (-1), 
-    !
-    .
-
-utility(_,U) :-
-    U = 0
-    .
-
-
-%.......................................
-% minimax
-%.......................................
-% The minimax algorithm always assumes an optimal opponent.
-% For tic-tac-toe, optimal play will always result in a tie, so the algorithm is effectively playing not-to-lose.
-
-% For the opening move against an optimal player, the best minimax can ever hope for is a tie.
-% So, technically speaking, any opening move is acceptable.
-% Save the user the trouble of waiting  for the computer to search the entire minimax tree 
-% by simply selecting a random square.
-
-minimax(_,[E,E,E, E,E,E, E,E,E],_,S,_) :-   
-    blank_mark(E),
-    random_int_1n(9,S),
-    !
-    .
-
-minimax(D,B,M,S,U) :-
-    D2 is D + 1,
-    moves(B,L),          %%% get the list of available moves
-    !,
-    best(D2,B,M,L,S,U),  %%% recursively determine the best available move
-    !
-    .
-
-% if there are no more available moves, 
-% then the minimax value is the utility of the given board position
-
-minimax(_,B,_,_,U) :-
-    utility(B,U)      
-    .
-
-
-%.......................................
-% best
-%.......................................
-% determines the best move in a given list of moves by recursively calling minimax
-%
-
-% if there is only one move left in the list...
-
-best(D,B,M,[S1],S,U) :-
-    move(B,S1,M,B2),        %%% apply that move to the board,
-    inverse_mark(M,M2), 
-    !,  
-    minimax(D,B2,M2,_S,U),  %%% then recursively search for the utility value of that move.
-    S = S1, !,
-    output_value(D,S,U),
-    !
-    .
-
-% if there is more than one move in the list...
-
-best(D,B,M,[S1|T],S,U) :-
-    move(B,S1,M,B2),             %%% apply the first move (in the list) to the board,
-    inverse_mark(M,M2), 
-    !,
-    minimax(D,B2,M2,_S,U1),      %%% recursively search for the utility value of that move,
-    best(D,B,M,T,S2,U2),         %%% determine the best move of the remaining moves,
-    output_value(D,S1,U1),      
-    better(D,M,S1,U1,S2,U2,S,U)  %%% and choose the better of the two moves (based on their respective utility values)
-    .
-
-
-%.......................................
-% better
-%.......................................
-% returns the better of two moves based on their respective utility values.
-%
-% if both moves have the same utility value, then one is chosen at random.
-
-better(_,M,S1,U1,_,U2,     S,U) :-
-    maximizing(M),                     %%% if the player is maximizing
-    U1 > U2,                           %%% then greater is better.
-    S = S1,
-    U = U1,
-    !
-    .
-
-better(_,M,S1,U1,_,U2,     S,U) :-
-    minimizing(M),                     %%% if the player is minimizing,
-    U1 < U2,                           %%% then lesser is better.
-    S = S1,
-    U = U1, 
-    !
-    .
-
-better(D,M,S1,U1,S2,U2,     S,U) :-
-    U1 == U2,                          %%% if moves have equal utility,
-    random_int_1n(10,R),               %%% then pick one of them at random
-    better2(D,R,M,S1,U1,S2,U2,S,U),    
-    !
-    .
-
-better(_,_,_,_,S2,U2,     S,U) :-        %%% otherwise, second move is better
-    S = S2,
-    U = U2,
-    !
-    .
-
-
-%.......................................
-% better2
-%.......................................
-% randomly selects two squares of the same utility value given a single probability
-%
-
-better2(_,R,_,S1,U1,_,_,  S,U) :-
-    R < 6,
-    S = S1,
-    U = U1, 
-    !
-    .
-
-better2(_,_,_,_,_,S2,U2,  S,U) :-
-    S = S2,
-    U = U2,
-    !
-    .
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% OUTPUT
@@ -568,48 +447,6 @@ output_value(D,S,U) :-
 output_value(_,_,_) :- 
     true
     .
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% PSEUDO-RANDOM NUMBERS 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%.......................................
-% random_seed
-%.......................................
-% Initialize the random number generator...
-% If no seed is provided, use the current time
-%
-
-random_seed :-
-    random_seed(_),
-    !
-    .
-
-random_seed(N) :-
-    nonvar(N),
-% Do nothing, SWI-Prolog does not support seeding the random number generator
-    !
-    .
-
-random_seed(N) :-
-    var(N),
-% Do nothing, SWI-Prolog does not support seeding the random number generator
-    !
-    .
-
-%.......................................
-% random_int_1n
-%.......................................
-% returns a random integer from 1 to N
-%
-random_int_1n(N, V) :-
-    V is random(N) + 1,
-    !
-    .
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% LIST PROCESSING
