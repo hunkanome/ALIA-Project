@@ -1,6 +1,10 @@
 :- ensure_loaded(fct_evaluation).
 :- ensure_loaded(negamax).
 :- ensure_loaded(niveau1).
+:- dynamic 
+    board/1,        %%% the current board
+    player/2        %%% the players
+    .
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%     FACTS
