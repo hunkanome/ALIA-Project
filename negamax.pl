@@ -8,7 +8,7 @@ negamax(Board, Player, OutMove) :-
 negamax_move_choice(_, _, OutMove, [], OutMove, _).
 
 negamax_move_choice(Board, Player, OutMove, [Move|ListMoves], BestMove, BestMoveScore) :-
-    MaxDepth is 4,
+    MaxDepth is 3,
     negamax_move(Board, Player, Move, Score, MaxDepth, BestMoveScore),
     write('Move '),write(Move),write(' has score '),write(Score),nl,
     (Score > BestMoveScore
@@ -38,8 +38,8 @@ negamax_score(Board, Player, Score, Depth, Alpha) :-
     moves(Board, ListMoves),
     ( is_winning_move(Board, Player, ListMoves)
     -> Score is Depth*100
-    ; negamax_best(Board, Player, ListMoves, S, Depth, Alpha),
-    %findall(X, (member(Move, ListMoves), negamax_move(Board, Player, Move, X, Depth, Alpha)), ListScores),
+    ; negamax_best(Board, Player, ListMoves, S, Depth, -100000),
+    %findall(X, (member(Move, ListMoves), negamax_move(Board, Player, Move, X, Depth, -100000)), ListScores),
     %write(Depth),write(':'),write(ListScores),nl,
     %max_list(ListScores, S),
     Score is -S).
