@@ -106,7 +106,7 @@ set_players(2) :-
     asserta( player(2, human) ),!
     .
 
-set_players(N) :-
+set_players(_) :-
     nl,
     write('Please enter 0, 1, or 2.'),
     read_players
@@ -125,7 +125,7 @@ set_ia(P,random) :-
     asserta( player(P, random) ), !
     .
 
-set_ia(P,IA):-
+set_ia(P,_):-
     nl,
     write('Please enter random'),
     select_ia(P)
@@ -143,7 +143,7 @@ human_playing(M) :-
     asserta( player(2, human) ), !
     .
 
-human_playing(M) :-
+human_playing(_) :-
     nl,
     write('Please enter y or r.'),
     set_players(1)
@@ -249,9 +249,9 @@ game_over2(P, B) :-
     win(B, D),!
     .
 
-game_over2(P, B) :-
+game_over2(_, B) :-
     blank_mark(E),
-    not(case(B,X,Y,E))     %%% game is over if board is full
+    not(case(B,_,_,E))     %%% game is over if board is full
     .
 
 
@@ -280,7 +280,7 @@ make_move2(human, P, B, B2) :-
     read(S),
 
     blank_mark(E),
-    case(B,S,X,E),
+    case(B,S,_,E),
     player_mark(P, M),
     move(B, S, M, B2), !
     .
@@ -364,7 +364,7 @@ utility(B,U) :-
     !
     .
 
-utility(B,U) :-
+utility(_,U) :-
     U = 0
     .
 
@@ -380,7 +380,7 @@ utility(B,U) :-
 % Save the user the trouble of waiting  for the computer to search the entire minimax tree 
 % by simply selecting a random square.
 
-minimax(D,[E,E,E, E,E,E, E,E,E],M,S,U) :-   
+minimax(_,[E,E,E, E,E,E, E,E,E],_,S,_) :-   
     blank_mark(E),
     random_int_1n(9,S),
     !
@@ -397,7 +397,7 @@ minimax(D,B,M,S,U) :-
 % if there are no more available moves, 
 % then the minimax value is the utility of the given board position
 
-minimax(D,B,M,S,U) :-
+minimax(_,B,_,_,U) :-
     utility(B,U)      
     .
 
@@ -440,7 +440,7 @@ best(D,B,M,[S1|T],S,U) :-
 %
 % if both moves have the same utility value, then one is chosen at random.
 
-better(D,M,S1,U1,S2,U2,     S,U) :-
+better(_,M,S1,U1,_,U2,     S,U) :-
     maximizing(M),                     %%% if the player is maximizing
     U1 > U2,                           %%% then greater is better.
     S = S1,
@@ -448,7 +448,7 @@ better(D,M,S1,U1,S2,U2,     S,U) :-
     !
     .
 
-better(D,M,S1,U1,S2,U2,     S,U) :-
+better(_,M,S1,U1,_,U2,     S,U) :-
     minimizing(M),                     %%% if the player is minimizing,
     U1 < U2,                           %%% then lesser is better.
     S = S1,
@@ -463,7 +463,7 @@ better(D,M,S1,U1,S2,U2,     S,U) :-
     !
     .
 
-better(D,M,S1,U1,S2,U2,     S,U) :-        %%% otherwise, second move is better
+better(_,_,_,_,S2,U2,     S,U) :-        %%% otherwise, second move is better
     S = S2,
     U = U2,
     !
@@ -476,14 +476,14 @@ better(D,M,S1,U1,S2,U2,     S,U) :-        %%% otherwise, second move is better
 % randomly selects two squares of the same utility value given a single probability
 %
 
-better2(D,R,M,S1,U1,S2,U2,  S,U) :-
+better2(_,R,_,S1,U1,_,_,  S,U) :-
     R < 6,
     S = S1,
     U = U1, 
     !
     .
 
-better2(D,R,M,S1,U1,S2,U2,  S,U) :-
+better2(_,_,_,_,_,S2,U2,  S,U) :-
     S = S2,
     U = U2,
     !
@@ -521,7 +521,7 @@ output_winner(B) :-
     !
     .
 
-output_winner(B) :-
+output_winner(_) :-
     write('No winner.')
     .
 
@@ -565,7 +565,7 @@ output_value(D,S,U) :-
     write(U), !
     .
 
-output_value(D,S,U) :- 
+output_value(_,_,_) :- 
     true
     .
 
@@ -639,7 +639,7 @@ set_item(L, N, V, L2) :-
     set_item2(L, N, V, 1, L2)
     .
 
-set_item2( [], N, V, A, L2) :- 
+set_item2([], N, _, _, L2) :- 
     N == -1, 
     L2 = []
     .
