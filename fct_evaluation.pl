@@ -53,23 +53,23 @@ count_occurrences(Player1, Player2, Slice, Count) :-
 % Calcul le score pour Player1 sans prendre en compte son adversaire
 evaluate_board_player(Board, Player1, Player2, Value) :-
     findall(Count, (    
-        between(1, 4, Col),     
+        between(1, 7, Col),     
         between(1, 6, Row),
         get_slice(Board, Col, Row, horizontal, Slice), % Trouver toutes les slices horizontales
         count_occurrences(Player1, Player2, Slice, Count)
     ;                       
         between(1, 7, Col),     
-        between(1, 3, Row),
+        between(1, 6, Row),
         get_slice(Board, Col, Row, vertical, Slice), % Trouver toutes les slices verticales
         count_occurrences(Player1, Player2, Slice, Count)
     ;
-        between(1, 4, Col),
-        between(4, 6, Row),
+        between(1, 7, Col),
+        between(1, 6, Row),
         get_slice(Board, Col, Row, diagonalNeg, Slice), % Trouver toutes les slices diagonales pente négative
         count_occurrences(Player1, Player2, Slice, Count)
     ;
-        between(1, 4, Col),
-        between(1, 3, Row),
+        between(1, 7, Col),
+        between(1, 6, Row),
         get_slice(Board, Col, Row, diagonalPos, Slice), % Trouver toutes les slices diagonales pente positive
         count_occurrences(Player1, Player2, Slice, Count)
     ), Counts),
