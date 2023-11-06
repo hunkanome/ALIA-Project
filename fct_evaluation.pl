@@ -1,21 +1,19 @@
-/** 
-Adaptation de l'heuristique de jay@identity.pub en Prolog
-Crédits : https://identity.pub/2019/10/16/minimax-connect4.html
+% Adaptation de l'heuristique de jay@identity.pub en Prolog
+% Crédits : https://identity.pub/2019/10/16/minimax-connect4.html
 
-Description de l'heuristique :
-Tout d'abord, on découpe le plateau en ensembles de quatre cellules adjacentes.
-Notez qu'il y a beaucoup de ces ensembles et qu'ils se chevauchent (fortement). 
-Pour chaque ensemble, si un joueur est le seul à avoir des pièces dans cet ensemble, il recevra un point pour chaque pièce qu'il a dans cet ensemble. 
-Cela signifie que les pièces seront comptées plusieurs fois si elles apparaissent dans plusieurs ensembles qui ne sont occupés que par ce joueur. 
-Le nombre total de points est la valeur heuristique pour ce joueur.
-**/
+% Description de l'heuristique :
+% Tout d'abord, on découpe le plateau en ensembles de quatre cellules adjacentes.
+% Notez qu'il y a beaucoup de ces ensembles et qu'ils se chevauchent (fortement). 
+% Pour chaque ensemble, si un joueur est le seul à avoir des pièces dans cet ensemble, il recevra un point pour chaque pièce qu'il a dans cet ensemble. 
+% Cela signifie que les pièces seront comptées plusieurs fois si elles apparaissent dans plusieurs ensembles qui ne sont occupés que par ce joueur. 
+% Le nombre total de points est la valeur heuristique pour ce joueur.
 
 % 2D element finder
 get_element(Board, Col, Row, Element) :-
     nth1(Col, Board, RowList),
     nth1(Row, RowList, Element).
 
-/** Obtention d une slice du plateau (slice = 4 cases adjacentes) **/
+% Obtention d une slice du plateau (slice = 4 cases adjacentes)
 get_slice(Board, Col, Row, Direction, Slice) :-
     findall(Element, (
         between(0, 3, Offset), % Itération sur 4 cases adjacentes à partir d une case de départ (x=Col, y=Row)
