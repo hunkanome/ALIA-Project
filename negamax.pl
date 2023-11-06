@@ -8,7 +8,7 @@ negamax(Board, Player, OutMove) :-
 negamax_move_choice(_, _, OutMove, [], OutMove, _).
 
 negamax_move_choice(Board, Player, OutMove, [Move|ListMoves], BestMove, BestMoveScore) :-
-    MaxDepth is 3,
+    MaxDepth is 4,
     negamax_move(Board, Player, Move, Score, MaxDepth, BestMoveScore),
     write('Move '),write(Move),write(' has score '),write(Score),nl,
     (Score > BestMoveScore
