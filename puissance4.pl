@@ -59,11 +59,11 @@ initialize :-
     .
 
 goodbye :-
-    board(B),
+    board(Board),
     nl,
     nl,
     write('Game over: '),
-    output_winner(B),nl,
+    output_winner(Board),nl,
     write('                                 .\'\'.'),nl,
     write('       .\'\'.             *\'\'*    :_\\/_:     . '),nl,
     write('      :_\\/_:   .    .:.*_\\/_*   : /\\ :  .\'.:.\'.'),nl,
@@ -132,31 +132,31 @@ set_players(_) :-
     read_players
     .
 
-select_ia(P) :-
+select_ia(Player) :-
     nl,
     write('Which AI do you want to be the player '),
-    write(P),
+    write(Player),
     write(' ? (random/niveau1/nmax)'),
     read(IA),
-    set_ia(P,IA)
+    set_ia(Player,IA)
     .
 
-set_ia(P,random) :-
-    asserta( player(P, random) ), !
+set_ia(Player,random) :-
+    asserta( player(Player, random) ), !
     .
 
-set_ia(P, niveau1) :-
-    asserta( player(P, niveau1) ), !
+set_ia(Player, niveau1) :-
+    asserta( player(Player, niveau1) ), !
     .
 
-set_ia(P, nmax) :-
-    asserta( player(P, nmax) ), !
+set_ia(Player, nmax) :-
+    asserta( player(Player, nmax) ), !
     .
 
-set_ia(P,_):-
+set_ia(Player,_):-
     nl,
     write('Please enter random, niveau1 or nmax'),
-    select_ia(P)
+    select_ia(Player)
     .
 
 human_playing(M) :- 
@@ -177,13 +177,13 @@ human_playing(_) :-
     set_players(1)
     .
 
-play(P) :-
-    board(B), !,
-    output_board(B), !,
-    not(game_over(P, B)), !,
-    make_move(P, B), !,
-    next_player(P, P2), !,
-    play(P2), !
+play(Player) :-
+    board(Board), !,
+    output_board(Board), !,
+    not(game_over(Player, Board)), !,
+    make_move(Player, Board), !,
+    next_player(Player, Player2), !,
+    play(Player2), !
     .
 
 
@@ -191,17 +191,17 @@ play(P) :-
 % case : récupérer la valeur à la position (NC,NR)
 %.......................................
 % NC : numéro de la colonne, NR : numéro de la ligne
-case(B, NC, NR, V) :-
-    nth1(NC, B, C), nth1(NR, C, V).
+case(Board, ColNum, RowNum, Value) :-
+    nth1(ColNum, Board, Column), nth1(RowNum, Column, Value).
 
 
 %.......................................
 % win : vérifier les conditions de victoire
 %       récupérer le gagnant le cas échéant
 %.......................................
-win(B, D) :- winVertical(B,D),D\==e,!.
-win(B, D) :- winHorizontal(B,D),D\==e,!.
-win(B, D) :- winDiagonal(B,D),D\==e.
+win(Board, Disk) :- winVertical(Board, Disk),   Disk\==e,!.
+win(Board, Disk) :- winHorizontal(Board, Disk), Disk\==e,!.
+win(Board, Disk) :- winDiagonal(Board, Disk),   Disk\==e.
     
 % Vertical
 winVertical([C|_],D) :- winVerticalCol(C,D),!.
@@ -254,12 +254,11 @@ winDiagonal([_,_,_,[_,_,_,_,_,D],[_,_,_,_,D,_],[_,_,_,D,_,_],[_,_,D,_,_,_]], D).
 % move
 %.......................................
 % applies a move on the given board
-% (put disk D in square S on board B and return the resulting board B2)
+% (put disk D in column on board B and return the resulting board B2)
 %
 
-move(B,NC,D,B2) :-
-    add_disc(B,NC,D,B2)
-    .
+move(Board,Column,Disk,Board2) :-
+    add_disk(Board,Column,Disk,Board2).
 
 
 %.......................................
@@ -268,18 +267,18 @@ move(B,NC,D,B2) :-
 %.......................................
 % determines when the game is over
 %
-game_over(P, B) :-
-    game_over2(P, B)
+game_over(Player, Board) :-
+    game_over2(Player, Board)
     .
 
-game_over2(P, B) :-
-    opponent_mark(P, D),   %%% game is over if opponent wins
-    win(B, D),!
+game_over2(Player, Board) :-
+    opponent_mark(Player, Disk),   %%% game is over if opponent wins
+    win(Board, Disk),!
     .
 
-game_over2(_, B) :-
+game_over2(_, Board) :-
     blank_mark(E),
-    not(case(B,_,_,E))     %%% game is over if board is full
+    not(case(Board,_,_,E))     %%% game is over if board is full
     .
 
 
@@ -290,87 +289,63 @@ game_over2(_, B) :-
 % then applies that move to the given board
 %
 
-make_move(P, B) :-
-    player(P, Type),
-
-    make_move2(Type, P, B, B2),
-
+make_move(Player, Board) :-
+    player(Player, Type),
+    make_move2(Type, Player, Board, Board2),!,
     retract( board(_) ),
-    asserta( board(B2) )
+    asserta( board(Board2) )
     .
 
-make_move2(human, P, B, B2) :-
+make_move2(human, Player, Board, Board2) :-
     nl,
     nl,
     write('Player '),
-    write(P),
+    write(Player),
     write(' move? '),
-    read(S),
+    read(Move),
 
     blank_mark(E),
-    case(B,S,_,E),
-    player_mark(P, M),
-    move(B, S, M, B2), !
+    case(Board, Move, _, E),
+    player_mark(Player, Disk),
+    move(Board, Move, Disk, Board2), !
     .
 
-make_move2(human, P, B, B2) :-
+make_move2(human, Player, Board, Board2) :-
     nl,
     nl,
     write('Please select a numbered and empty column.'),nl,
-    make_move2(human,P,B,B2)
+    make_move2(human, Player, Board, Board2)
     .
 
-make_move2(random, P, B, B2) :-
-    nl,
-    nl,
-    write('Computer is thinking about his next move...'),
-    player_mark(P, D),
-    h_random(B, S),
-    move(B,S,D,B2),
+make_move2(random, Player, Board, Board2) :-
+    nl,nl,
+    write('RandomAI is thinking about his next move...'),
+    player_mark(Player, Disk),
+    h_random(Board, Move),
+    move(Board, Move, Disk, Board2),
+    nl,nl,
+    write('Computer places '),write(Disk),write(' in column '),write(Move),write('.').
 
-    nl,
-    nl,
-    write('Computer places '),
-    write(D),
-    write(' in column '),
-    write(S),
-    write('.')
-    .
-
-make_move2(nmax, P, B, B2) :-
-    nl,
-    nl,
-    write('Computer is thinking about his next move...'),nl,
-    player_mark(P, D),
-    (time(negamax(B, P, S))
+make_move2(nmax, Player, Board, Board2) :-
+    nl,nl,
+    write('NegamaxAI is thinking about his next move...'),nl,
+    player_mark(Player, Disk),
+    (time(negamax(Board, Player, Move))
     -> write('negamax succeded in providing a move'),nl
-    ; write('negamax failed'),nl, h_random(B, S)
+    ; write('negamax failed'),nl, h_random(Board, Move)
     ),
-    move(B,S,D,B2),
+    move(Board, Move, Disk, Board2),
+    nl,nl,
+    write('Computer places '),write(Disk),write(' in column '),write(Move),write('.').
 
-    nl,
-    nl,
-    write('Computer places '),
-    write(D),
-    write(' in column '),
-    write(S),
-    write('.').
-
-make_move2(niveau1, P, B, B2) :-
-    nl,
-    nl,
-    write('Computer is thinking about his next move...'),nl,
-    player_mark(P, D),
-    niveau1(B, P, S),
-    move(B,S,D,B2),
-
-    nl,
-    nl,
-    write('Computer places '),
-    write(D),
-    write(' in column '),
-    write(S),
-    write('.').
+make_move2(niveau1, Player, Board, Board2) :-
+    nl,nl,
+    write('Niveau1AI is thinking about his next move...'),nl,
+    player_mark(Player, Disk),
+    niveau1(Board, Player, Move),
+    move(Board, Move, Disk, Board2),
+    nl,nl,
+    write('Computer places '),write(Disk),write(' in column '),write(Move),write('.').
 
 %.......................................
 % moves
@@ -378,17 +353,18 @@ make_move2(niveau1, P, B, B2) :-
 % retrieves a list of available moves (empty squares) on a board.
 %
 
-moves(B,L) :- 
-    not(win(B,y)),  %%% if either player already won, then there are no available moves
-    not(win(B,r)),
-    findall(N, is_column_N_full(B,N), L),
-    L \== []
+moves(Board, ListMoves) :-
+    not(win(Board, y)),  %%% if either player already won, then there are no available moves
+    not(win(Board, r)),
+    findall(ColNum, is_column_N_full(Board, ColNum), ListMoves),
+    ListMoves \== []
     .
 
+
 % Vérifie si la colonne N est pleine
-is_column_N_full(B,N) :-
-    nth1(N,B,Col), /* Obtient Col, la N-ième colonne de la grille B (indexée à partir de 1) */
-    last(Col,X), /* Obtient X, le dernier élément de la colonne Col */
+is_column_N_full(Board, ColNum) :-
+    nth1(ColNum, Board, Col), /* Obtient Col, la N-ième colonne de la grille B (indexée à partir de 1) */
+    last(Col, X), /* Obtient X, le dernier élément de la colonne Col */
     blank_mark(X) /* Vérifie que le dernier élément X ne correspond pas à une case vide */
     .
 
@@ -399,12 +375,12 @@ is_column_N_full(B,N) :-
 % Heuristic that choses a move at random
 %
 
-h_random(B,S) :-
-    moves(B,CP), /* Obtient la liste des coups possibles CP */
-    length(CP,NCP), /* Obtient le nombre de coups possibles NCP */
-    N is NCP + 1,
-    random(1,N,X), /* Choisi un coup possible X aléatoirement */
-    nth1(X,CP,S) /* Transcrit X en coup possible S */
+h_random(Board, Move) :-
+    moves(Board, AllMoves), /* Obtient la liste des coups possibles */
+    length(AllMoves, NbMoves), /* Obtient le nombre de coups possibles */
+    N is NbMoves + 1,
+    random(1, N, Choice), /* Choisi un coup possible aléatoirement */
+    nth1(Choice, AllMoves, Move) /* Transcrit Choice en coup possible */
     . 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -413,77 +389,54 @@ h_random(B,S) :-
 
 output_players :- 
     nl,
-    player(1, V1),
-    write('Player 1 is '),   %%% either human or computer
-    write(V1),
-
+    player(1, Player1),
+    write('Player 1 is '),write(Player1),
     nl,
-    player(2, V2),
-    write('Player 2 is '),   %%% either human or computer
-    write(V2), 
-    !
-    .
+    player(2, Player2),
+    write('Player 2 is '),write(Player2), !.
 
 
-output_winner(B) :-
-    win(B,y),
-    write('Y wins.'),
-    !
-    .
+output_winner(Board) :-
+    win(Board, y),
+    write('Y wins.'), !.
 
-output_winner(B) :-
-    win(B,r),
-    write('R wins.'),
-    !
-    .
+output_winner(Board) :-
+    win(Board, r),
+    write('R wins.'), !.
 
 output_winner(_) :-
-    write('No winner.')
-    .
+    write('No winner.').
 
 % affiche la grille
-output_board(B):-
+output_board(Board):-
     nl,
     write('+---------------------------+'), nl,
-    write('|'), output_line(B,6),
+    write('|'), output_line(Board, 6),
     write('|---+---+---+---+---+---+---|'), nl,
-    write('|'), output_line(B,5),
+    write('|'), output_line(Board, 5),
     write('|---+---+---+---+---+---+---|'), nl,
-    write('|'), output_line(B,4),
+    write('|'), output_line(Board, 4),
     write('|---+---+---+---+---+---+---|'), nl,
-    write('|'), output_line(B,3),
+    write('|'), output_line(Board, 3),
     write('|---+---+---+---+---+---+---|'), nl,
-    write('|'), output_line(B,2),
+    write('|'), output_line(Board, 2),
     write('|---+---+---+---+---+---+---|'), nl,
-    write('|'), output_line(B,1),
+    write('|'), output_line(Board, 1),
     write('+---------------------------+'), nl, 
     write('  1   2   3   4   5   6   7'), nl, 
     nl.
 
 % affiche la N-ième ligne de la grille
-output_line([],_) :- nl.
-output_line([C|B],N) :-
-    nth1(N, C, R), write(' '), output_case(R), write(' |'), output_line(B,N).
+output_line([], _) :- nl.
+output_line([Column|Board], RowNum) :-
+    nth1(RowNum, Column, Case), write(' '), output_case(Case), write(' |'), output_line(Board,RowNum).
 
 % affiche et formate une valeur
 output_case(r) :- ansi_format([bold,fg(red)],'O',[]),!.
 output_case(y) :- ansi_format([bold,fg(yellow)],'O',[]),!.
 output_case(e) :- write(' '),!.
-output_case(D) :- write(D).
+output_case(Value) :- write(Value). % should never happen
 
-
-output_value(D,S,U) :-
-    D == 1,
-    nl,
-    write('Square '),
-    write(S),
-    write(', utility: '),
-    write(U), !
-    .
-
-output_value(_,_,_) :- 
-    true
-    .
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% LIST PROCESSING
@@ -495,12 +448,12 @@ output_value(_,_,_) :-
 % Ajoute un jeton D, dans la colonne NC, de la grille B
 % et renvoie la nouvelle grille B2
 
-add_disc(B,NC,D,B2) :-
+add_disk(Board, ColNum, Disk, Board2) :-
     blank_mark(E),
-    nth1(NC,B,C), % NC ième colonne de B vers C
-    nth1(NR,C,E),!, % NR ligne de la première case vide dans la colonne
-    set_item(C,NR,D,C2),
-    set_item(B,NC,C2,B2).    
+    nth1(ColNum, Board, Column), % ColNum ième colonne de Board vers C
+    nth1(RowNum, Column, E),!, % NR ligne de la première case vide dans la colonne
+    set_item(Column, RowNum, Disk, NewColumn), % Ajoute le jeton dans la colonne
+    set_item(Board, ColNum, NewColumn, Board2).  % Remplace la colonne dans la grille
 
 %.......................................
 % set_item
