@@ -3,7 +3,7 @@
 %.......................................
 negamax(Board, Player, OutMove) :-
     moves(Board, L),
-    % Sf position is symmetric, only check the first 4 moves as moves 5,6,7 have the same scores as 3,2,1.
+    % If position is symmetric, only check the first 4 moves as moves 5,6,7 have the same scores as 3,2,1.
     (is_position_symmetric(Board)
     -> intersection(L, [1,2,3,4], L2),write('Position is symmetric ! Not cheking moves more than 4'),nl
     ; L2 = L
@@ -104,10 +104,15 @@ is_position_symmetric(Board) :-
 % Checks if two lists are the same (values and order)
 same_list(L1, L2) :- maplist(=, L1, L2).
 
+% Reorders moves in the list such that the moves in the center are explored first
 better_move_ordering(List, OutList) :- centered_order(List, OutList, [4,3,5,2,6,1,7], []).
 
+% When the goal order has been explored, return the reordered list
 centered_order(_, OutList, [], OutList).
 
+% Chekcs if the next move in the goal order is in the list of moves
+% If it is, add it to the reordered list
+% Then proceed with the reast of the goal list
 centered_order(List, OutList, [Move|Moves], Acc) :-
     (member(Move, List)
     -> append(Acc, [Move], Acc2), centered_order(List, OutList, Moves, Acc2)
