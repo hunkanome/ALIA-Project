@@ -5,9 +5,10 @@ negamax(Board, Player, OutMove) :-
     moves(Board, L),
     % Sf position is symmetric, only check the first 4 moves as moves 5,6,7 have the same scores as 3,2,1.
     (is_position_symmetric(Board)
-    -> intersection(L, [1,2,3,4], ListMoves),write('Position is symmetric ! Not cheking moves more than 4'),nl
-    ; ListMoves = L
+    -> intersection(L, [1,2,3,4], L2),write('Position is symmetric ! Not cheking moves more than 4'),nl
+    ; L2 = L
     ),
+    better_move_ordering(L2, ListMoves),
     negamax_move_choice(Board, Player, OutMove, ListMoves, 1, -100000).
 
 % When all moves have been explored, return the best move
@@ -17,7 +18,7 @@ negamax_move_choice(_, _, OutMove, [], OutMove, _).
 % If the score is better than the current best score, update the best move.
 % Then explore the next move
 negamax_move_choice(Board, Player, OutMove, [Move|ListMoves], BestMove, BestMoveScore) :-
-    MaxDepth is 4,
+    MaxDepth is 6,
     negamax_move(Board, Player, Move, Score, MaxDepth, BestMoveScore),
     write('Move '),write(Move),write(' has score '),write(Score),nl,
     (Score > BestMoveScore
@@ -37,12 +38,12 @@ negamax_move(Board, Player, Move, Score, Depth, Alpha) :-
 negamax_score(Board, Player, Score, Depth, _) :-
     Depth >= 0,
     game_over(Player, Board),
-    Score is (Depth+1)*100.
+    Score is (Depth+1)*100,!.
 
 % If the board is not in a final state, but final depth is reached, compute a score
 negamax_score(Board, Player, Score, 0, _) :-
     not(game_over(Player, Board)),
-    heuristic(Board, Score, Player).
+    heuristic(Board, Score, Player),!.
 
 % If the board is not in a final state, and final depth is not reached, explore the moves in the next depth
 negamax_score(Board, Player, Score, Depth, Alpha) :-
@@ -50,9 +51,10 @@ negamax_score(Board, Player, Score, Depth, Alpha) :-
     not(game_over(Player, Board)),
     moves(Board, L),
     (is_position_symmetric(Board)
-    -> intersection(L, [1,2,3,4], ListMoves)
-    ; ListMoves = L
+    -> intersection(L, [1,2,3,4], L2)
+    ; L2 = L
     ), 
+    better_move_ordering(L2, ListMoves),
     ( is_winning_move(Board, Player, ListMoves)
     -> Score is Depth*100
     ; negamax_best(Board, Player, ListMoves, S, Depth, -100000, Alpha),
@@ -78,7 +80,7 @@ negamax_best(Board, Player, [Move|Moves], Score, Depth, BestScore, Alpha) :-
 is_winning_move(Board, Player, [Move|Moves]) :-
     player_mark(Player, Disc),
     move(Board, Move, Disc, B2),
-    (game_over(Player, B2)
+    (game_over(Player, B2),!
     ; is_winning_move(Board, Player, Moves)).
 
 % Computes a score for the current state of the board
@@ -101,3 +103,15 @@ is_position_symmetric(Board) :-
     
 % Checks if two lists are the same (values and order)
 same_list(L1, L2) :- maplist(=, L1, L2).
+
+better_move_ordering(List, OutList) :- centered_order(List, OutList, [4,3,5,2,6,1,7], []).
+
+centered_order(_, OutList, [], OutList).
+
+centered_order(List, OutList, [Move|Moves], Acc) :-
+    (member(Move, List)
+    -> append(Acc, [Move], Acc2), centered_order(List, OutList, Moves, Acc2)
+    ; centered_order(List, OutList, Moves, Acc)
+    ).
+
+%winning_order(List, OutList, Player, Board) :-
