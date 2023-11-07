@@ -113,5 +113,3 @@ centered_order(List, OutList, [Move|Moves], Acc) :-
     -> append(Acc, [Move], Acc2), centered_order(List, OutList, Moves, Acc2)
     ; centered_order(List, OutList, Moves, Acc)
     ).
-
-%winning_order(List, OutList, Player, Board) :-
