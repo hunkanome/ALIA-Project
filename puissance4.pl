@@ -1,5 +1,6 @@
 :- ensure_loaded(fct_evaluation).
 :- ensure_loaded(negamax).
+:- ensure_loaded(minimax_tmp).
 :- ensure_loaded(niveau1).
 :- dynamic 
     board/1,        %%% the current board
@@ -135,8 +136,8 @@ set_players(_) :-
 select_ia(P) :-
     nl,
     write('Which AI do you want to be the player '),
-    write(P),
-    write(' ? (random/niveau1/nmax)'),
+    write(Player),
+    write(' ? (random/niveau1/nmax/minimax)'),
     read(IA),
     set_ia(P,IA)
     .
@@ -153,10 +154,14 @@ set_ia(P, nmax) :-
     asserta( player(P, nmax) ), !
     .
 
-set_ia(P,_):-
+set_ia(Player, minimax) :-
+    asserta( player(Player, minimax) ), !
+    .
+
+set_ia(Player,_):-
     nl,
-    write('Please enter random, niveau1 or nmax'),
-    select_ia(P)
+    write('Please enter random, niveau1, nmax or minimax'),
+    select_ia(Player)
     .
 
 human_playing(M) :- 
@@ -356,21 +361,23 @@ make_move2(nmax, P, B, B2) :-
     write(S),
     write('.').
 
-make_move2(niveau1, P, B, B2) :-
-    nl,
-    nl,
-    write('Computer is thinking about his next move...'),nl,
-    player_mark(P, D),
-    niveau1(B, P, S),
-    move(B,S,D,B2),
+make_move2(minimax, Player, Board, Board2) :-
+    nl,nl,
+    write('MinimaxAI is thinking about his next move...'),nl,
+    player_mark(Player, Disk),!,
+    minimax(Board, Player, Move),
+    move(Board, Move, Disk, Board2),
+    nl,nl,
+    write('Computer places '),write(Disk),write(' in column '),write(Move),write('.').
 
-    nl,
-    nl,
-    write('Computer places '),
-    write(D),
-    write(' in column '),
-    write(S),
-    write('.').
+make_move2(niveau1, Player, Board, Board2) :-
+    nl,nl,
+    write('Niveau1AI is thinking about his next move...'),nl,
+    player_mark(Player, Disk),
+    niveau1(Board, Player, Move),
+    move(Board, Move, Disk, Board2),
+    nl,nl,
+    write('Computer places '),write(Disk),write(' in column '),write(Move),write('.').
 
 %.......................................
 % moves
