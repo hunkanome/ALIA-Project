@@ -13,7 +13,7 @@ niveau1_try_move(Board, Player, ColNum, Move) :-
     move(Board, ColNum, Disk, B2),
     next_player(Player, NextPlayer),
     game_over(NextPlayer, B2),
-    Move is ColNum.
+    Move is ColNum,!.
 niveau1_try_move(Board, Player, ColNum, Move) :-
     NextColNum is ColNum + 1,
     niveau1_try_move(Board, Player, NextColNum, Move).

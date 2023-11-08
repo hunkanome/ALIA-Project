@@ -1,6 +1,7 @@
 :- ensure_loaded(fct_evaluation).
 :- ensure_loaded(negamax).
 :- ensure_loaded(niveau1).
+:- ensure_loaded(niveau2).
 :- dynamic 
     board/1,        %%% the current board
     player/2        %%% the players
@@ -136,26 +137,26 @@ select_ia(Player) :-
     nl,
     write('Which AI do you want to be the player '),
     write(Player),
-    write(' ? (random/niveau1/nmax)'),
+    write(' ? (random/niveau1/niveau2/nmax)'),
     read(IA),
     set_ia(Player,IA)
     .
 
 set_ia(Player,random) :-
-    asserta( player(Player, random) ), !
-    .
+    asserta( player(Player, random) ), !.
 
 set_ia(Player, niveau1) :-
-    asserta( player(Player, niveau1) ), !
-    .
+    asserta( player(Player, niveau1) ), !.
+
+set_ia(Player, niveau2) :-
+    asserta( player(Player, niveau2) ), !.
 
 set_ia(Player, nmax) :-
-    asserta( player(Player, nmax) ), !
-    .
+    asserta( player(Player, nmax) ), !.
 
 set_ia(Player,_):-
     nl,
-    write('Please enter random, niveau1 or nmax'),
+    write('Please enter one of random/niveau1/niveau2/nmax'),
     select_ia(Player)
     .
 
@@ -354,6 +355,23 @@ make_move2(niveau1, Player, Board, Board2) :-
     open('coups.txt', append, Stream),
     statistics(walltime, _),
     niveau1(Board, Player, Move),
+    statistics(walltime, [_ | [ExecutionTime]]),
+    write(Stream, 'Execution time : '), write(Stream, ExecutionTime), write(Stream, 'ms -> '),
+    write(Stream, Move), nl(Stream),
+    close(Stream),
+
+    move(Board, Move, Disk, Board2),
+    nl,nl,
+    write('Computer places '),write(Disk),write(' in column '),write(Move),write('.').
+
+make_move2(niveau2, Player, Board, Board2) :-
+    nl,nl,
+    write('Niveau2AI is thinking about his next move...'),nl,
+    player_mark(Player, Disk),
+
+    open('coups.txt', append, Stream),
+    statistics(walltime, _),
+    niveau2(Board, Player, Move),
     statistics(walltime, [_ | [ExecutionTime]]),
     write(Stream, 'Execution time : '), write(Stream, ExecutionTime), write(Stream, 'ms -> '),
     write(Stream, Move), nl(Stream),
