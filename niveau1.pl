@@ -8,12 +8,12 @@ niveau1(Board, Player, Move) :-
 
 niveau1_try_move(Board, _, 8, Move) :-
     h_random(Board,Move),!.
-niveau1_try_move(Board, Player, Try, Move) :-
-    player_mark(Player, Disc),
-    move(Board, Try, Disc, B2),
+niveau1_try_move(Board, Player, ColNum, Move) :-
+    player_mark(Player, Disk),
+    move(Board, ColNum, Disk, B2),
     next_player(Player, NextPlayer),
     game_over(NextPlayer, B2),
-    Move is Try.
-niveau1_try_move(Board, Player, Try, Move) :-
-    NextTry is Try + 1,
-    niveau1_try_move(Board, Player, NextTry, Move).
+    Move is ColNum.
+niveau1_try_move(Board, Player, ColNum, Move) :-
+    NextColNum is ColNum + 1,
+    niveau1_try_move(Board, Player, NextColNum, Move).
