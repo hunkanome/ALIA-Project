@@ -34,4 +34,4 @@ niveau3_try_move_not_lose(Board, Player, ColNum, Move) :-
     Move is ColNum,!.
 niveau3_try_move_not_lose(Board, Player, ColNum, Move) :-
     NextColNum is ColNum + 1,
-    niveau3_try_move_win(Board, Player, NextColNum, Move).
+    niveau3_try_move_not_lose(Board, Player, NextColNum, Move).
