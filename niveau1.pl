@@ -1,42 +1,19 @@
-niveau1(Board,Player,Move) :-
-    moves(Board, ListMoves),
-    niveau1_try_move(Board,Player,Move),
-    member(Move, ListMoves),!.
+:- ensure_loaded(puissance4).
 
-niveau1_try_move(Board,Player,1) :-
-    player_mark(Player, Disc),
-    move(Board, 1, Disc, B2),
-    next_player(Player, NextPlayer),
-    game_over(NextPlayer, B2),!.
-niveau1_try_move(Board,Player,2) :-
-    player_mark(Player, Disc),
-    move(Board, 2, Disc, B2),
-    next_player(Player, NextPlayer),
-    game_over(NextPlayer, B2),!.
-niveau1_try_move(Board,Player,3) :-
-    player_mark(Player, Disc),
-    move(Board, 3, Disc, B2),
-    next_player(Player, NextPlayer),
-    game_over(NextPlayer, B2),!.
-niveau1_try_move(Board,Player,4) :-
-    player_mark(Player, Disc),
-    move(Board, 4, Disc, B2),
-    next_player(Player, NextPlayer),
-    game_over(NextPlayer, B2),!.
-niveau1_try_move(Board,Player,5) :-
-    player_mark(Player, Disc),
-    move(Board, 5, Disc, B2),
-    next_player(Player, NextPlayer),
-    game_over(NextPlayer, B2),!.
-niveau1_try_move(Board,Player,6) :-
-    player_mark(Player, Disc),
-    move(Board, 6, Disc, B2),
-    next_player(Player, NextPlayer),
-    game_over(NextPlayer, B2),!.
-niveau1_try_move(Board,Player,7) :-
-    player_mark(Player, Disc),
-    move(Board, 7, Disc, B2),
-    next_player(Player, NextPlayer),
-    game_over(NextPlayer, B2),!.
-niveau1_try_move(Board,_,Move) :-
+niveau1(Board, Player, Move) :-
+    moves(Board, ListMoves),
+    niveau1_try_move(Board, Player, 1, Move),
+    member(Move, ListMoves).
+
+
+niveau1_try_move(Board, _, 8, Move) :-
     h_random(Board,Move),!.
+niveau1_try_move(Board, Player, Try, Move) :-
+    player_mark(Player, Disc),
+    move(Board, Try, Disc, B2),
+    next_player(Player, NextPlayer),
+    game_over(NextPlayer, B2),
+    Move is Try.
+niveau1_try_move(Board, Player, Try, Move) :-
+    NextTry is Try + 1,
+    niveau1_try_move(Board, Player, NextTry, Move).
