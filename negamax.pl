@@ -20,7 +20,7 @@ negamax_move_choice(_, _, OutMove, [], OutMove, _).
 % If the score is better than the current best score, update the best move.
 % Then explore the next move
 negamax_move_choice(Board, Player, OutMove, [Move|ListMoves], BestMove, BestMoveScore) :-
-    MaxDepth is 6,
+    depth(Player, MaxDepth),
     negamax_move(Board, Player, Move, Score, MaxDepth, BestMoveScore),
     write('Move '),write(Move),write(' has score '),write(Score),nl,
     (Score > BestMoveScore
