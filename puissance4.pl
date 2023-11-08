@@ -330,10 +330,18 @@ make_move2(nmax, Player, Board, Board2) :-
     nl,nl,
     write('NegamaxAI is thinking about his next move...'),nl,
     player_mark(Player, Disk),
+
+    open('coups.txt', append, Stream),
+    statistics(walltime, _),
     (time(negamax(Board, Player, Move))
     -> write('negamax succeded in providing a move'),nl
     ; write('negamax failed'),nl, h_random(Board, Move)
     ),
+    statistics(walltime, [_ | [ExecutionTime]]),
+    write(Stream, 'Execution time : '), write(Stream, ExecutionTime), write(Stream, 'ms -> '),
+    write(Stream, Move), nl(Stream),
+    close(Stream),
+
     move(Board, Move, Disk, Board2),
     nl,nl,
     write('Computer places '),write(Disk),write(' in column '),write(Move),write('.').
@@ -342,7 +350,15 @@ make_move2(niveau1, Player, Board, Board2) :-
     nl,nl,
     write('Niveau1AI is thinking about his next move...'),nl,
     player_mark(Player, Disk),
+
+    open('coups.txt', append, Stream),
+    statistics(walltime, _),
     niveau1(Board, Player, Move),
+    statistics(walltime, [_ | [ExecutionTime]]),
+    write(Stream, 'Execution time : '), write(Stream, ExecutionTime), write(Stream, 'ms -> '),
+    write(Stream, Move), nl(Stream),
+    close(Stream),
+
     move(Board, Move, Disk, Board2),
     nl,nl,
     write('Computer places '),write(Disk),write(' in column '),write(Move),write('.').
