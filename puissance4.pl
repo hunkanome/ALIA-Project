@@ -57,8 +57,9 @@ hello :-
 
 initialize :-
     blank_mark(E),
-    asserta( board([[E,E,E,E,E,E],[E,E,E,E,E,E],[E,E,E,E,E,E],[E,E,E,E,E,E],[E,E,E,E,E,E],[E,E,E,E,E,E],[E,E,E,E,E,E]]) )  %%% create a blank board
-    .
+    asserta( board([[E,E,E,E,E,E],[E,E,E,E,E,E],[E,E,E,E,E,E],[E,E,E,E,E,E],[E,E,E,E,E,E],[E,E,E,E,E,E],[E,E,E,E,E,E]]) ),  %%% create a blank board
+    open('coups.txt', write, Stream), 
+    close(Stream).
 
 goodbye :-
     board(Board),
@@ -326,7 +327,15 @@ make_move2(random, Player, Board, Board2) :-
     nl,nl,
     write('RandomAI is thinking about his next move...'),
     player_mark(Player, Disk),
+    
+    open('coups.txt', append, Stream),
+    statistics(walltime, _),
     h_random(Board, Move),
+    statistics(walltime, [_ | [ExecutionTime]]),
+    write(Stream, 'Execution time : '), write(Stream, ExecutionTime), write(Stream, 'ms -> '),
+    write(Stream, Move), nl(Stream),
+    close(Stream),
+
     move(Board, Move, Disk, Board2),
     nl,nl,
     write('Computer places '),write(Disk),write(' in column '),write(Move),write('.').
