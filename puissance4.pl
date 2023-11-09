@@ -5,7 +5,8 @@
 :- ensure_loaded(niveau3).
 :- dynamic 
     board/1,        %%% the current board
-    player/2        %%% the players
+    player/2,        %%% the players
+    depth/2         %%% the depth of the negamax algorithm
     .
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -144,6 +145,20 @@ select_ia(Player) :-
     set_ia(Player,IA)
     .
 
+set_depth_nmax(Player) :-
+    nl,
+    write('Quelle profondeur voulez-vous pour l\'IA '),
+    write(Player),
+    write(' ? (1-6)'),
+    read(Depth),
+    (   integer(Depth),
+        Depth >= 1,
+        Depth =< 6
+    ->  asserta(depth(Player,Depth))
+    ;   write('Veuillez entrer un nombre entier entre 1 et 6.'),
+        set_depth_nmax(Player)
+    ).
+
 set_ia(Player,random) :-
     asserta( player(Player, random) ), !.
 
@@ -157,7 +172,8 @@ set_ia(Player, niveau3) :-
     asserta( player(Player, niveau3) ), !.
 
 set_ia(Player, nmax) :-
-    asserta( player(Player, nmax) ), !.
+    asserta( player(Player, nmax) ),
+    set_depth_nmax(Player), !.
 
 set_ia(Player,_):-
     nl,
@@ -344,10 +360,9 @@ make_move2(nmax, Player, Board, Board2) :-
     nl,nl,
     write('NegamaxAI is thinking about his next move...'),nl,
     player_mark(Player, Disk),
-
     open('coups.txt', append, Stream),
     statistics(walltime, _),
-    (time(negamax(Board, Player, Move))
+    (negamax(Board, Player, Move)
     -> write('negamax succeded in providing a move'),nl
     ; write('negamax failed'),nl, h_random(Board, Move)
     ),
